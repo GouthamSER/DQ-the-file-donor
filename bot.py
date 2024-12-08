@@ -20,6 +20,17 @@ from datetime import date, datetime
 import pytz
 from sample_info import tempDict
 
+# peer id invaild fixxx
+from pyrogram import utils as pyroutils
+pyroutils.MIN_CHAT_ID = -999999999999
+pyroutils.MIN_CHANNEL_ID = -100999999999999
+
+from plugins.webcode import bot_run
+from os import environ
+from aiohttp import web as webserver
+
+PORT_CODE = environ.get("PORT", "8080")
+
 class Bot(Client):
 
     def __init__(self):
@@ -61,6 +72,13 @@ class Bot(Client):
         logging.info(f"{me.first_name} with for Pyrogram v{__version__} (Layer {layer}) started on {me.username}.")
         logging.info(LOG_STR)
         logging.info(script.LOGO)
+        
+        client = webserver.AppRunner(await bot_run())
+        await client.setup()
+        bind_address = "0.0.0.0"
+        await webserver.TCPSite(client, bind_address,
+        PORT_CODE).start()
+        
         tz = pytz.timezone('Asia/Kolkata')
         today = date.today()
         now = datetime.now(tz)
